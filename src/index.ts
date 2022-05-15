@@ -26,6 +26,15 @@ export class Main {
                 Intents.FLAGS.GUILD_VOICE_STATES
             ],
             silent: false,
+            presence: {
+                activities: [
+                    {
+                        name: `you. Version ${VERSION}`,
+                        type: "WATCHING"
+                    }
+                ],
+                status: "online",
+            }
         });
 
         this._client.once('ready', async () => {
@@ -41,9 +50,6 @@ export class Main {
                 guild: {log: true},
             });
             await this._client.initApplicationPermissions(true);
-
-            if (this._client.user)
-                this._client.user.setActivity('you. Version ' + VERSION, {type: 'WATCHING'});
 
             console.log('Ready!');
         });
