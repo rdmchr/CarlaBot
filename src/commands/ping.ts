@@ -7,6 +7,10 @@ export class ping {
 
     @Slash("ping", {description: "Ping a domain name."})
     async ping(@SlashOption("domain", {description: "Domain name to ping."}) domain: string, @SlashOption("pings", {type: "INTEGER", required: false}) pings: number , interaction: CommandInteraction) {
+        if (!interaction.guild) {
+            await interaction.reply("This command can only be used in a guild.");
+            return;
+        }
         if (pings == undefined || pings < 1) {
             pings = 1;
         }

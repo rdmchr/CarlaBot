@@ -9,7 +9,10 @@ export class whoIs {
 
         @Slash("whois", {description: "Run a who is lookup on a given domain."})
         async whois(@SlashOption("domain", {description: "Domain name to lookup."}) domain: string, interaction: CommandInteraction) {
-
+            if (!interaction.guild) {
+                await interaction.reply("This command can only be used in a guild.");
+                return;
+            }
             const jwaID = process.env.JWA_ID;
             const jwaSecret = process.env.JWA_SECRET;
 
