@@ -1,0 +1,70 @@
+import "reflect-metadata";
+
+import {Client} from "discordx";
+import {Intents, Interaction} from "discord.js";
+import {dirname, importx} from "@discordx/importer";
+import {VERSION} from "./constants.js";
+import {init} from "@sentry/node";
+
+
+export class Main {
+    private static _client: Client;
+
+    static get Client(): Client {
+        return this._client;
+    }
+
+    static async start() {
+        this._client = new Client({
+            botGuilds: [(client) => client.guilds.cache.map((guild) => guild.id)],
+            intents: [
+                Intents.FLAGS.GUILDS,
+                Intents.FLAGS.GUILD_MESSAGES,
+                Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+                Intents.FLAGS.GUILD_MESSAGE_TYPING,
+                Intents.FLAGS.GUILD_MEMBERS,
+                Intents.FLAGS.GUILD_VOICE_STATES
+            ],
+            silent: false,
+        });
+
+        this._client.once('ready', async () => {
+            // clear all commands
+            /*await this._client.clearApplicationCommands(
+                ...this._client.guilds.cache.map((g) => g.id)
+            );*/
+
+            await this._client.guilds.fetch();
+
+            await this._client.initApplicationCommands({
+                global: {log: true},
+                guild: {log: true},
+            });
+            await this._client.initApplicationPermissions(true);
+
+            if (this._client.user)
+                this._client.user.setActivity('you. Version ' + VERSION, {type: 'WATCHING'});
+
+            console.log('Ready!');
+        });
+
+        this._client.on('interactionCreate', (interaction: Interaction) => {
+            this._client.executeInteraction(interaction);
+        });
+
+        this._client.on('messageCreate', (message) => {
+            this._client.executeCommand(message);
+        });
+
+        await importx(dirname(import.meta.url) + "/{events,commands}/**/*.{js,ts}");
+
+        if (!process.env.DISCORD_TOKEN) {
+            throw Error("Could not find DISCORD_TOKEN in your environment");
+        }
+        await this._client.login(process.env.DISCORD_TOKEN);
+    }
+}
+// initialize Sentry
+init();
+
+Main.start();

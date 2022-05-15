@@ -1,0 +1,14 @@
+services:
+  carla:
+    image: rdmchr/carlabot:1.0.0
+    restart: unless-stopped
+    container_name: carla
+    environment:
+      - DISCORD_TOKEN=
+      - JWA_ID=
+      - JWA_SECRET=
+  watchtower:
+    image: containrrr/watchtower
+    command: --interval 10
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
