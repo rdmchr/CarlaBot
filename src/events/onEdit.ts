@@ -7,6 +7,8 @@ export class onDelete {
     async onMessageDelete([message]: ArgsOf<"messageUpdate">, client: Client): Promise<void> {
         if (message.author?.bot) return;
         const newMessage = await message.channel.messages.fetch(message.id);
+        if (newMessage.content === message.content) return;
+
         const embed = new MessageEmbed()
         embed.title = "Message Updated";
         embed.description = `Old: ${'```'}${message.content}${'```'}\nNew: ${'```'}${newMessage.content}${'```'}`;
