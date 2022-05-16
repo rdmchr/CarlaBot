@@ -4,7 +4,7 @@ import {Client} from "discordx";
 import {Intents, Interaction} from "discord.js";
 import {dirname, importx} from "@discordx/importer";
 import {VERSION} from "./constants.js";
-import {init} from "@sentry/node";
+import {init} from "./sentry.js";
 
 
 export class Main {
