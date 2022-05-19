@@ -8,6 +8,10 @@ COPY package*.json ./
 COPY tsconfig.json ./
 # copy source code to /app/src folder
 COPY src /app/src
+# copy Prisma file to /app/prisma folder
+COPY prisma /app/prisma
+# copy start script to /app folder
+COPY start.sh /app
 
 # check files list
 RUN ls -a
@@ -15,4 +19,4 @@ RUN ls -a
 RUN npm install
 RUN npm run build
 
-CMD [ "node", "./dist/index.js" ]
+CMD [ "./start.sh" ]
