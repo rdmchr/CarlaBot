@@ -1,0 +1,38 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String      @id
+  servers       Server[]
+  permissions   Permissions @relation(fields: [permissionsId], references: [id])
+  permissionsId String      @unique
+  lastSeen      DateTime?
+  verified      Boolean
+  tag           String?
+}
+
+model Server {
+  id        String   @id @default(cuid())
+  type      String
+  channel   String   @unique
+  createdAt DateTime @default(now())
+  owner     User     @relation(fields: [ownerId], references: [id])
+  ownerId   String
+  hetznerId Int      @unique
+}
+
+model Permissions {
+  id          String  @id @default(cuid())
+  user        User?
+  isAdmin     Boolean @default(false)
+  canCreateDB Boolean @default(false)
+}
