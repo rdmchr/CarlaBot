@@ -1,21 +1,19 @@
-import { Discord, Slash, SlashGroup } from "discordx";
-import { CommandInteraction } from "discord.js";
-import { PrismaClient } from "@prisma/client";
-import {createNewDatabaseServer} from "../utils/databaseManager.js";
+import {ButtonComponent, Discord, Slash, SlashGroup, SlashOption} from "discordx";
+import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import {prisma} from '../utils/prisma.js';
+import {createNewDatabaseServer, deleteDatabaseServer, execSQL} from "../utils/databaseManager.js";
 
 @Discord()
 @SlashGroup({ name: 'db' })
 @SlashGroup('db')
 export class database {
     @Slash('create', { description: 'Create a new database' })
-    async create(interaction: CommandInteraction) {
+    async create(@SlashOption('db-name', {type: "STRING", required: false}) channelName: string,interaction: CommandInteraction) {
         if (!interaction.guild) {
             await interaction.reply("This command can only be used in a guild.");
             return;
         }
         await interaction.deferReply();
-
-        const prisma = new PrismaClient();
 
         const user = await prisma.user.findUnique({
             where: {
@@ -37,7 +35,12 @@ export class database {
             return;
         }
 
-        const channelName = interaction.member?.user.username;
+        if(user.servers.length >= user.permissions.maxDatabases) {
+            await interaction.editReply('You have reached the maximum number of databases you can create.');
+            return;
+        }
+
+        channelName = channelName ?? `${interaction.member?.user.username}-${user.servers.length}`;
 
         if (!channelName) {
             await interaction.editReply('An error occurred, while creating your channel,');
@@ -69,9 +72,9 @@ export class database {
 
         await channel.send(`<@${interaction.user.id}> I am currently creating your database. As soon as I'm ready I will notify you in this channel.`);
 
-        const serverId = await createNewDatabaseServer(`user-db-${channel.id}`, channel);
+        const serverData = await createNewDatabaseServer(`user-db-${channel.id}`, channel);
 
-        if (!serverId) {
+        if (!serverData) {
             await channel.send('An error occurred while creating your database. (cc: <@172726364900687872>)');
             return;
         }
@@ -86,8 +89,93 @@ export class database {
                 },
                 channel: channel.id,
                 createdAt: new Date(),
-                hetznerId: serverId
+                hetznerId: serverData.serverId,
+                database: 'postgres',
+                port: 5432,
+                username: 'postgres',
+                ip: serverData.ip,
+                password: serverData.password,
             }
         })
+    }
+
+    @Slash('exec', { description: 'Execute a command in the database' })
+    async exec(@SlashOption('command', {type: "STRING"}) command: string, interaction: CommandInteraction) {
+        await interaction.deferReply();
+        const dbServer = await prisma.server.findUnique({
+            where: {
+                channel: interaction.channelId,
+            },
+            select: {
+                id: true
+            }
+        });
+        if (!dbServer) {
+            await interaction.editReply('This channel does not have a database associated with it.');
+            return;
+        }
+        const reponse = await execSQL(dbServer.id, command);
+        if (!reponse) {
+            await interaction.editReply('An error occurred while executing the command.');
+            return;
+        }
+        await interaction.editReply(reponse);
+    }
+
+    @Slash('delete', { description: 'Delete a database' })
+    async delete(interaction: CommandInteraction) {
+        const confirmDeleteButton = new MessageButton()
+        .setLabel("Delete Server")
+        .setEmoji("💀")
+        .setStyle("DANGER")
+        .setCustomId("confirm-delete");
+
+        const cancelDeleteButton = new MessageButton()
+        .setLabel("Cancel Delete")
+        .setEmoji("🥺")
+        .setStyle("PRIMARY")
+        .setCustomId("cancel-delete");
+
+        const actionRow = new MessageActionRow().addComponents(confirmDeleteButton, cancelDeleteButton);
+
+        const embed = new MessageEmbed();
+        embed.setTitle("Do you really want to delete this database?");
+        embed.setDescription("This channel and all of the database data will be lost. This action can not be undone.");
+        embed.setColor("#ff0000");
+
+        interaction.reply({embeds: [embed], components: [actionRow]});
+    }
+
+    @ButtonComponent('confirm-delete')
+    async confirmDelete(interaction: CommandInteraction) {
+        await interaction.deferReply({ephemeral: true});
+        const dbServer = await prisma.server.findUnique({
+            where: {
+                channel: interaction.channelId,
+            },
+            select: {
+                hetznerId: true
+            }
+        });
+        if (!dbServer) {
+            await interaction.editReply('This channel does not have a database associated with it.');
+            return;
+        }
+        const success = await deleteDatabaseServer(dbServer.hetznerId);
+        if (success) {
+            await prisma.server.delete({
+                where: {
+                    channel: interaction.channelId,
+                }
+            });
+            await interaction.editReply('Successfully deleted database. I will now delete this channel.');
+            setTimeout(() => interaction.channel?.delete(), 15e3);
+        }
+    }
+
+    @ButtonComponent('cancel-delete')
+    async cancelDelete(interaction: CommandInteraction) {
+        await interaction.deferReply({ephemeral: true});
+        await interaction.editReply('Cancelled database deletion.');
     }
 }

@@ -1,6 +1,6 @@
-import { PrismaClient } from "@prisma/client";
 import { CommandInteraction, GuildMember } from "discord.js";
 import { Discord, Permission, Slash, SlashGroup } from "discordx";
+import {prisma} from "../utils/prisma.js";
 
 @Discord()
 @SlashGroup({ name: 'admin' })
@@ -10,7 +10,6 @@ export class admin {
     async validatePermissions(member: GuildMember | null): Promise<boolean> {
         if (!member) return false;
         if(member.id === '172726364900687872') return true;
-        const prisma = new PrismaClient();
         const user = await prisma.user.findUnique({
             where: {
                 id: member.id,
@@ -38,8 +37,6 @@ export class admin {
 
         await interaction.deferReply({ ephemeral: true });
 
-        const prisma = new PrismaClient();
-
         const members = await interaction.guild.members.fetch();
 
         members.forEach(async (member) => {
@@ -59,8 +56,6 @@ export class admin {
                 });
             } catch (_) { }
         });
-
-        await prisma.$disconnect();
 
         await interaction.editReply('Done.');
     }

@@ -28,11 +28,17 @@ model Server {
   owner     User     @relation(fields: [ownerId], references: [id])
   ownerId   String
   hetznerId Int      @unique
+  ip        String
+  port      Int
+  password  String
+  username  String
+  database  String
 }
 
 model Permissions {
-  id          String  @id @default(cuid())
-  user        User?
-  isAdmin     Boolean @default(false)
-  canCreateDB Boolean @default(false)
+  id           String  @id @default(cuid())
+  user         User?
+  isAdmin      Boolean @default(false)
+  canCreateDB  Boolean @default(false)
+  maxDatabases Int     @default(1)
 }

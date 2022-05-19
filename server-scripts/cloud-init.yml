@@ -21,6 +21,6 @@ system_info:
     groups: [ docker ]
 
 runcmd:
-  - [ wget, "https://gist.githubusercontent.com/rdmchr/943a77579c4989ba9537ebe5ee4da9f2/raw/63bc3683e91ce62c6ce0820f2e6e5e1e0ae94d67/docker-compose.yml", -O, /run/docker-compose.yml ]
+  - [ wget, "https://gist.githubusercontent.com/rdmchr/943a77579c4989ba9537ebe5ee4da9f2/raw/207ae84768c1ac25a1737664ffcdc63e03b6487e/docker-compose.yml", -O, /run/docker-compose.yml ]
   - sed -i 's/MY_POSTGRES_PASSWORD/REPLACE_WITH_PASSWORD/g' /run/docker-compose.yml
   - [ docker, compose, -f, "/run/docker-compose.yml", up, -d ]

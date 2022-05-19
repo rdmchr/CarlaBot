@@ -1,12 +1,10 @@
-import { PrismaClient } from "@prisma/client";
 import { ArgsOf, Discord, On } from "discordx";
+import {prisma} from "../utils/prisma.js";
 
 @Discord()
 export class onNewMember {
     @On('guildMemberAdd')
     async onNewMember([member]: ArgsOf<"guildMemberAdd">): Promise<void> {
-        const prisma = new PrismaClient();
-
         const user = await prisma.user.findUnique({
             where: {
                 id: member.id,

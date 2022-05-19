@@ -1,5 +1,5 @@
 import {ArgsOf, Discord, On} from "discordx";
-import {Client, MessageEmbed, TextChannel} from "discord.js";
+import {Client, MessageEmbed} from "discord.js";
 
 @Discord()
 export class onDelete {
