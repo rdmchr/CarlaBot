@@ -1,0 +1,69 @@
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    volumes:
+      - /data/postgres:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - traefik-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.postgres.entrypoints=postgres"
+      - "traefik.tcp.routers.postgres.rule=HostSNI(`*`)"
+      - "traefik.tcp.services.postgres.loadBalancer.server.port=5432"
+
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:latest
+    depends_on:
+      - postgres
+    volumes:
+      - /data/cloudbeaver/workspace:/opt/cloudbeaver/workspace
+    restart: always
+    networks:
+      - traefik-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cloudbeaver.rule=Host(`BEAVER_URL`)"
+      - "traefik.http.routers.cloudbeaver.entrypoints=websecure"
+      - "traefik.http.routers.cloudbeaver.tls.certresolver=myresolver"
+
+  traefik:
+    image: traefik:latest
+    restart: unless-stopped
+    container_name: traefik
+    hostname: traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.postgres.address=:5432" # PostgreSQL endpoint
+      - "--certificatesresolvers.myresolver.acme.dnschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.dnschallenge.provider=cloudflare"
+      - "--certificatesresolvers.myresolver.acme.email=certs@example.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--accesslog=true"
+      - "--accesslog.filepath=/log/access.log"
+      - "--accesslog.filters.statuscodes=200,300-399,500-599"
+    networks:
+      - traefik-network
+    ports:
+      - 443:443
+      - 8080:8080
+      - "5432:5432"
+      - "6969:8080" # Traefik dashboard
+    volumes:
+      - "/data/traefik/letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/data/traefik/log:/log"
+    environment:
+      - CLOUDFLARE_EMAIL=$CLOUDFLARE_EMAIL
+      - CLOUDFLARE_API_KEY=$CLOUDFLARE_KEY
+
+# networks
+networks:
+  traefik-network:
