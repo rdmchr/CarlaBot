@@ -95,7 +95,7 @@ async function removeOldData() {
     console.log(chalk.green('Removing old data...'));
     const rootPath = path.join(process.cwd(), '../../');
     const rootFolder = rootPath.replaceAll('\\', '').replaceAll('/', '');
-    if (!rootFolder.endsWith('carla-bot')) {
+    if (!rootFolder.endsWith('CarlaBot')) {
         console.log(chalk.red.bold(`It seems like this script was not run in the right path (path is ${rootPath} and doesn\'t end with 'carla-bot'). Are you sure you want to continue? This could lead to file loss.`));
         const {confirm} = await waitForConfirmation();
         if (confirm !== true) {
