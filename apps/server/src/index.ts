@@ -5,10 +5,11 @@ import cors from 'cors';
 import prisma from '@carla/database';
 import { generateJWT } from './utils.js';
 import {VERSION} from './constants.js';
+import { getENVValue } from '@carla/variable_provider';
 
-const clientId = process.env.DISCORD_OAUTH_CLIENT_ID as string;
-const clientSecret = process.env.DISCORD_OAUTH_CLIENT_SECRET as string;
-const webUrl = process.env.WEB_URL as string;
+const clientId = getENVValue("DISCORD_OAUTH_CLIENT_ID") as string;
+const clientSecret = getENVValue("DISCORD_OAUTH_CLIENT_SECRET") as string;
+const webUrl = getENVValue("WEB_URL") as string;
 
 const corsOptions: cors.CorsOptions = {
     origin: [ webUrl ],
@@ -17,7 +18,7 @@ const corsOptions: cors.CorsOptions = {
 };
 
 const app = Express();
-const PORT = 4000 || process.env.SERVER_PORT;
+const PORT = 4000 || getENVValue("SERVER_PORT");
 
 app.use(Express.urlencoded({extended: true}));
 app.use(Express.json());

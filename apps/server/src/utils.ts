@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
+import { getENVValue } from '@carla/variable_provider';
 
-const JWT_SECRET = process.env.JWT_SECRET as string;
+const JWT_SECRET = getENVValue("JWT_SECRET") as string;
 
 function getJwtSecret() {
     if (!JWT_SECRET) {
