@@ -1,0 +1,15 @@
+{
+  "name": "@carla/database",
+  "version": "0.0.0",
+  "main": "index.js",
+  "type": "module",
+  "devDependencies": {
+    "typescript": "^4.6.4"
+  },
+  "dependencies": {
+    "prisma": "^3.14.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
