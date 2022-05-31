@@ -1,25 +1,32 @@
-FROM node:16 AS builder
+# stage build
+FROM node:16-alpine
 
-# create root application folder
 WORKDIR /app
 
-# copy configs to /app folder
-COPY out/yarn.lock ./
-# copy source code to /app/src folder
-COPY out/full /app
+# copy everything to the container
+COPY out/full .
 
-# check files list
-RUN ls -a
+# clean install all dependencies
+RUN yarn install
 
-RUN yarn install --pure-lockfile
-RUN yarn global add turbo typescript
+# build SvelteKit app
 RUN yarn run build
 
-FROM node:16
-# make the 'app' folder the current working directory
+
+# stage run
+FROM node:16-alpine
+
 WORKDIR /app
-RUN npm install -g http-server
-# Copy the respective nginx configuration files
-COPY --from=builder /app/apps/web/dist /app
-EXPOSE 8080
-CMD [ "http-server", "/app", "--proxy", "http://localhost:8080?" ]
+
+# copy dependency list
+COPY --from=0 /app/apps/web/package.json ./
+#COPY --from=0 /app/apps/web/yarn.lock ./
+
+# clean install dependencies, no devDependencies, no prepare script
+RUN yarn install --production
+
+# copy built SvelteKit app to /app
+COPY --from=0 /app/apps/web/build ./
+
+EXPOSE 3000
+CMD ["node", "./index.js"]

@@ -1,14 +1,11 @@
 import chalk from 'chalk';
 import inquirer from 'inquirer';
-import versions from './versions.json' assert { type: 'json' };
 import { exec } from 'child_process';
 import rimraf from 'rimraf';
 import * as path from 'path';
 import { readFileSync, writeFileSync } from 'fs';
 
 const containerBaseName = 'rdmchr/carla-';
-
-//TODO: Write latest tag to file
 
 async function getScope() {
     return inquirer.prompt([ {
@@ -115,11 +112,19 @@ async function removeOldData() {
     });
 }
 
-async function writeVersion(scope: string, version: string) {
+async function writeVersionToProject(scope: string, version: string) {
     console.log(chalk.green('Writing version to constants.ts...'));
     const currentData = readFileSync(`../../out/full/apps/${scope}/src/constants.ts`, 'utf8');
     const newData = currentData.replace("DEBUG", version);
     writeFileSync(`../../out/full/apps/${scope}/src/constants.ts`, newData, 'utf8');
+}
+
+async function writeVersionToFile(scope: string, version: string) {
+    console.log(chalk.green('Writing version to versions.json...'));
+    const currentData = readFileSync(`./versions.json`, 'utf8');
+    const currentJson = JSON.parse(currentData);
+    currentJson[scope] = version;
+    writeFileSync(`./versions.json`, JSON.stringify(currentJson), 'utf8');
 }
 
 function handleError(error: Error) {
@@ -127,11 +132,19 @@ function handleError(error: Error) {
     process.exit(1);
 }
 
+function getCurrentVersion(scope: string) {
+    console.log(chalk.green('Writing version to versions.json...'));
+    const currentData = readFileSync(`./versions.json`, 'utf8');
+    const currentJson = JSON.parse(currentData);
+    return currentJson[scope];
+}
+
 async function main() {
+    console.log(process.cwd())
     await removeOldData();
     const scopeRes = await getScope();
     const scope = scopeRes.scope.toLowerCase() as 'bot' | 'web' | 'server';
-    const currVersion = versions[scope];
+    const currVersion = getCurrentVersion(scope);
     const versionRes = await getVersion(currVersion);
     const version = versionRes.version as string;
     if (!version) {
@@ -144,9 +157,10 @@ async function main() {
     }
 
     await prune(scope);
-    await writeVersion(scope, version);
+    await writeVersionToProject(scope, version);
     await build(scope, version);
     await createLatest(scope, version);
+    await writeVersionToFile(scope, version);
     console.log(chalk.green(`Done! Successfully created ${containerBaseName}${scope}:${version} & ${containerBaseName}${scope}:latest`));
 }
 

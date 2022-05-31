@@ -1,6 +1,6 @@
 services:
   carla:
-    image: rdmchr/carlabot:latest
+    image: rdmchr/carla-bot:latest
     restart: unless-stopped
     container_name: carla
     networks:
@@ -9,9 +9,68 @@ services:
       - DISCORD_TOKEN=
       - JWA_ID=
       - JWA_SECRET=
-      - DATABASE_URL="postgresql://postgres:postgres@postgres:5432/postgres?schema=public"
-      - HETZNER_TOKEN=""
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres?schema=public
+      - HETZNER_TOKEN=
+      - WEBHOOK_SECRET=""
+  web:
+    image: rdmchr/carla-web:latest
+    restart: unless-stopped
+    container_name: web
+    networks:
+      - carla
+    environment:
+      - VITE_SERVER_URL=
+      - VITE_WEB_URL=
+      - VITE_DISCORD_OAUTH_CLIENT_ID=
+  server:
+    image: rdmchr/carla-server:latest
+    restart: unless-stopped
+    container_name: server
+    networks:
+      - carla
+    environment:
+      - JWT_SECRET=
+      - DATABASE_URL=
+      - DISCORD_OAUTH_CLIENT_ID=
+      - DISCORD_OAUTH_CLIENT_SECRET=
       - WEBHOOK_SECRET=
+      - WEBHOOK_URL=
+      - WEB_URL=
+  traefik:
+    image: traefik:v2.5
+    restart: unless-stopped
+    container_name: traefik
+    hostname: traefik
+    command:
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.dnschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.dnschallenge.provider=cloudflare"
+      - "--certificatesresolvers.myresolver.acme.email=<YOUR-EMAIL>"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--accesslog=true"
+      - "--accesslog.filepath=/log/access.log"
+      - "--accesslog.filters.statuscodes=200,300-399,500-599"
+    networks:
+      - traefik-network
+    ports:
+      - 443:443
+      - 8080:8080
+    volumes:
+      - "./letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./log:/log"
+    environment:
+      - CLOUDFLARE_EMAIL=$CLOUDFLARE_EMAIL
+      - CLOUDFLARE_API_KEY=$CLOUDFLARE_KEY
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.<YOUR-DOMAIN>`)"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.tls.certresolver=myresolver"
   watchtower:
     image: containrrr/watchtower
     container_name: watchtower

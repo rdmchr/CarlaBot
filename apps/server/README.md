@@ -9,6 +9,7 @@
 - **WEBHOOK_SECRET**: Webhook secret; make sure to pick a strong secret, if you expose the ports of the bots' webhook server
 - **WEBHOOK_URL**: The URL of the webhook server.
 - **WEB_URL**: The URL of the web server.
+- **SERVER_ID**: The ID of the Discord server.
 
 ## How to generate the JWT secret
 
