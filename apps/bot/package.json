@@ -1,7 +1,17 @@
 {
   "name": "@carla/bot",
   "version": "0.0.0",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "source": "src/index.ts",
+  "bin": "dist/index.js",
+  "pkg": {
+    "assets": [
+      "./node_modules/@types",
+      "./node_modules/typescript/lib/*.d.ts",
+      "src/**/*.ts",
+      "./tsconfig.json"
+    ]
+  },
   "type": "module",
   "dependencies": {
     "@carla/database": "*",
@@ -13,6 +23,7 @@
     "@prisma/client": "^3.14.0",
     "@sentry/node": "^6.19.7",
     "@sentry/tracing": "^6.19.7",
+    "axios": "^0.27.2",
     "discord.js": "^13.7.0",
     "discordx": "^9.5.3",
     "express": "^4.18.1",
@@ -21,6 +32,7 @@
     "node-fetch-native": "^0.1.3",
     "pg": "^8.7.3",
     "reflect-metadata": "^0.1.13",
+    "tslib": "^2.4.0",
     "ytdl-core": "^4.11.0",
     "@carla/variable_provider" : "*"
   },
