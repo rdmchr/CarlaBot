@@ -3,13 +3,13 @@ import bodyParser from 'body-parser';
 import fetch from 'node-fetch-native';
 import cors from 'cors';
 import prisma from '@carla/database';
-import { generateJWT } from './utils.js';
+import { generateJWT, getUserFromJWT } from './utils.js';
 import {VERSION} from './constants.js';
-import { getENVValue } from '@carla/variable_provider';
+import { getEnvValue } from '@carla/variable-provider';
 
-const clientId = getENVValue("DISCORD_OAUTH_CLIENT_ID") as string;
-const clientSecret = getENVValue("DISCORD_OAUTH_CLIENT_SECRET") as string;
-const webUrl = getENVValue("WEB_URL") as string;
+const clientId = getEnvValue("DISCORD_OAUTH_CLIENT_ID") as string;
+const clientSecret = getEnvValue("DISCORD_OAUTH_CLIENT_SECRET") as string;
+const webUrl = getEnvValue("WEB_URL") as string;
 
 const corsOptions: cors.CorsOptions = {
     origin: [ webUrl ],
@@ -18,7 +18,7 @@ const corsOptions: cors.CorsOptions = {
 };
 
 const app = Express();
-const PORT = 4000 || getENVValue("SERVER_PORT");
+const PORT = 4000;
 
 app.use(Express.urlencoded({extended: true}));
 app.use(Express.json());
@@ -26,9 +26,21 @@ app.use(bodyParser.text());
 app.use(cors(corsOptions));
 
 app.get('/', async (req, res) => {
-    console.log(req);
-    return res.send('Hello World!');
+    return res.sendStatus(200);
 });
+
+app.get('/music', async (req, res) => {
+    const jwt = req.headers.authorization as string;
+    if (!jwt) {
+        return res.sendStatus(401);
+    }
+    const user = await getUserFromJWT(jwt);
+    console.log(user);
+    if (!user) {
+        return res.sendStatus(403);
+    }
+    return res.status(200).send({userId: user});
+})
 
 app.get('/auth', async (req, res) => {
     const code = req.query.code as string;
@@ -93,7 +105,7 @@ app.get('/auth', async (req, res) => {
 
     const token = generateJWT(webUser.id);
 
-    return res.cookie('token', token, {
+    return res.cookie('authorization', token, {
         secure: true,
         httpOnly: true,
         maxAge: expiration.getTime() - Date.now(),

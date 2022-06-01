@@ -4,7 +4,7 @@ import { CommandInteraction, MessageEmbed, TextChannel } from 'discord.js';
 import pg from 'pg';
 import crypto from 'crypto';
 import prisma from '@carla/database';
-import { getENVValue } from '@carla/variable_provider';
+import { getEnvValue } from '@carla/variable-provider';
 
 export async function createNewDatabaseServer(serverName: string, channel: TextChannel) {
     const password = generatePassword();
@@ -19,7 +19,7 @@ export async function createNewDatabaseServer(serverName: string, channel: TextC
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getENVValue("HETZNER_TOKEN")}`,
+            'Authorization': `Bearer ${getEnvValue("HETZNER_TOKEN")}`,
         },
         body: JSON.stringify({
             image: 'ubuntu-20.04',
@@ -45,7 +45,7 @@ export async function deleteDatabaseServer(id: number) {
     const res = await fetch(`https://api.hetzner.cloud/v1/servers/${id}`, {
         method: 'DELETE',
         headers: {
-            'Authorization': `Bearer ${getENVValue("HETZNER_TOKEN")}`,
+            'Authorization': `Bearer ${getEnvValue("HETZNER_TOKEN")}`,
         },
     });
     const data = await res.json();

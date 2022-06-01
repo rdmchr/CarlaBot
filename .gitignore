@@ -38,3 +38,4 @@ yarn-error.log*
 # local data
 data/
 dev.docker-compose.yml
+test.docker-compose.yml

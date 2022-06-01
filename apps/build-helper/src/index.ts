@@ -121,10 +121,10 @@ async function writeVersionToProject(scope: string, version: string) {
 
 async function writeVersionToFile(scope: string, version: string) {
     console.log(chalk.green('Writing version to versions.json...'));
-    const currentData = readFileSync(`./versions.json`, 'utf8');
+    const currentData = readFileSync(path.join(process.cwd(), `versions.json`), 'utf8');
     const currentJson = JSON.parse(currentData);
     currentJson[scope] = version;
-    writeFileSync(`./versions.json`, JSON.stringify(currentJson), 'utf8');
+    writeFileSync(path.join(process.cwd(), `versions.json`), JSON.stringify(currentJson), 'utf8');
 }
 
 function handleError(error: Error) {
@@ -134,7 +134,7 @@ function handleError(error: Error) {
 
 function getCurrentVersion(scope: string) {
     console.log(chalk.green('Writing version to versions.json...'));
-    const currentData = readFileSync(`./versions.json`, 'utf8');
+    const currentData = readFileSync(path.join(process.cwd(), `versions.json`), 'utf8');
     const currentJson = JSON.parse(currentData);
     return currentJson[scope];
 }

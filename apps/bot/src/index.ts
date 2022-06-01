@@ -8,7 +8,7 @@ import * as Tracing from '@sentry/tracing';
 import * as Sentry from '@sentry/node';
 import { start } from './webhook.js';
 import { MyPlayer } from './audio/audio.js';
-import { getEnvValue } from '@carla/variable_provider';
+import { getEnvValue } from '@carla/variable-provider';
 
 
 export class Main {

@@ -1,5 +1,5 @@
 {
-    "name": "@carla/variable_provider",
+    "name": "@carla/variable-provider",
     "version": "0.0.0",
     "main": "index.js",
     "type": "module",
@@ -11,4 +11,3 @@
       "build": "tsc"
     }
   }
-  
