@@ -9,6 +9,8 @@
 - **JWA_ID**: JsonWHOISAPI.com ID
 - **JWA_SECRET**: JsonWHOISAPI.com secret
 - **DATABASE_URL**: Postgres database URL
+- **GLOT_TOKEN**: Glot api token
+- **TWITTER_TOKEN**: Twitter api bearer token
 
 ## How to generate the webhook secret
 
