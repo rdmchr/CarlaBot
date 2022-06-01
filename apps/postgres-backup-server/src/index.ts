@@ -2,9 +2,10 @@ import express from 'express';
 import Docker from 'dockerode';
 import {resolve} from 'path';
 import {exec} from "child_process";
+import { getENVValue } from '@carla/variable_provider';
 
 const docker = new Docker();
-const PORT = 5000 || process.env.BACKUP_PORT;
+const PORT = 5000 || getENVValue("BACKUP_PORT");
 
 const app = express();
 
