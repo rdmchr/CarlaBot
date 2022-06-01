@@ -14,6 +14,7 @@
         "WEB_URL" : "",
         "VITE_SERVER_URL" : "",
         "VITE_DISCORD_OAUTH_CLIENT_ID" : "",
-        "VITE_WEB_URL" : ""
+        "VITE_WEB_URL" : "",
+        "GLOT_TOKEN": ""
     }
 }
