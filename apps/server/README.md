@@ -10,6 +10,7 @@
 - **WEBHOOK_URL**: The URL of the webhook server.
 - **WEB_URL**: The URL of the web server.
 - **SERVER_ID**: The ID of the Discord server.
+- **SERVER_URL**: The URL of this server.
 
 ## How to generate the JWT secret
 

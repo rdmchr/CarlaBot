@@ -13,6 +13,7 @@
 - **AWS_KEY_ID**: AWS access key id
 - **AWS_SECRET_KEY**: AWS secret access key
 - **AWS_BUCKET_NAME**: AWS S3 bucket name
+- **SERVER_URL**: The URL of the website server
 
 ## How to generate the webhook secret
 
