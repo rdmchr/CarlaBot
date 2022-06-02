@@ -1,0 +1,22 @@
+{
+   "customizations":{
+      "vscode":{
+         "settings":{
+            "editor.inlineSuggest.enabled":true,
+            "workbench.colorTheme":"Vitesse Dark",
+            "svelte.enable-ts-plugin":true
+         },
+         "extensions":[
+            "WakaTime.vscode-wakatime",
+            "wayou.vscode-todo-highlight",
+            "svelte.svelte-vscode",
+            "Prisma.prisma",
+            "monokai.theme-monokai-pro-vscode",
+            "k--kato.intellij-idea-keybindings",
+            "VisualStudioExptTeam.vscodeintellicode",
+            "eamodio.gitlens",
+            "GitHub.copilot"
+         ]
+      }
+   }
+}
