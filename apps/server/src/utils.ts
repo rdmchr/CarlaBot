@@ -1,9 +1,8 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import prisma from '@carla/database';
 import fetch from 'node-fetch-native';
-import { getEnvValue } from '@carla/variable-provider';
 
-const JWT_SECRET = getEnvValue("JWT_SECRET") as string;
+const JWT_SECRET = process.env.JWT_SECRET as string;
 
 type DcApiGuild = {
     id: string;

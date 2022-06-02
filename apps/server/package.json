@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "@carla/database": "*",
-    "@carla/variable-provider": "*",
     "@prisma/client": "^3.14.0",
     "body-parser": "^1.20.0",
     "cors": "^2.8.5",

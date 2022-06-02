@@ -1,13 +1,12 @@
-import { ArgsOf, Discord, On } from "discordx";
-import { execSQL } from "../utils/databaseManager.js";
-import prisma from "@carla/database";
-import { Client } from "twitter-api-sdk";
-import { getEnvValue } from "@carla/variable-provider";
-import axios from "axios";
+import { ArgsOf, Discord, On } from 'discordx';
+import { execSQL } from '../utils/databaseManager.js';
+import prisma from '@carla/database';
+import fetch from 'node-fetch-native';
+import { uploadToS3 } from '../utils/s3Handler.js';
 
 type TwitterResponse = {
-    data: {
-        attachements: {
+    data: [ {
+        attachments?: {
             media_keys: string[]
         },
         id: string,
@@ -20,15 +19,15 @@ type TwitterResponse = {
             quote_count: number
         },
         text: string
-    },
-    includes: {
+    } ],
+    includes?: {
         media: [
             {
                 height: number,
                 width: number,
                 url: string,
                 media_key: string
-                type: "photo" | "video"
+                type: 'photo' | 'video'
             }
         ],
         users: [
@@ -41,48 +40,76 @@ type TwitterResponse = {
     }
 }
 
+interface mediaEntity {
+    media_key: string,
+    url: string
+}
+
 @Discord()
 export class onMessage {
     @On('messageCreate')
-    async onMessageCreate([message]: ArgsOf<"messageCreate">): Promise<void> {
+    async onMessageCreate([ message ]: ArgsOf<'messageCreate'>): Promise<void> {
         if (message.author.bot) return;
         if (message.cleanContent.startsWith('$'))
-            this.handleSQLCommand([message]);
+            await this.handleSQLCommand([ message ]);
         else
-            this.checkForTwitter([message]);
+            await this.checkForTwitter([ message ]);
     }
 
     //TODO: check if url points to specific video or photo
-    async checkForTwitter([message]: ArgsOf<"messageCreate">) {
-        const token = getEnvValue('TWITTER_TOKEN');
+    async checkForTwitter([ message ]: ArgsOf<'messageCreate'>) {
+        const token = process.env.TWITTER_TOKEN;
 
         if (!token) return;
         const tweetLinks = message.cleanContent.match('http(?:s)?:\/\/(?:www\.)?twitter\.com\/(?:[a-zA-Z0-9_]{4,15}|i)/status/[0-9]{0,20}');
         if (!tweetLinks) return;
-        const client = new Client(token);
+        const fetchedKeys: string[] = [];
+        const mediaEntities: mediaEntity[] = [];
+
+        // fetch media from tweets
         for (const link of tweetLinks) {
             const tweetId = link.split('/')[5];
-            const url = `https://api.twitter.com/2/tweets/${tweetId}?tweet.fields=public_metrics&expansions=attachments.media_keys,author_id,geo.place_id&media.fields=duration_ms,height,media_key,public_metrics,type,url,width`
-            const res = await axios.get<TwitterResponse>(url, {
+            const url = `https://api.twitter.com/2/tweets?ids=${tweetId}&expansions=author_id,attachments.media_keys&tweet.fields=id,created_at,public_metrics&media.fields=media_key,duration_ms,height,preview_image_url,type,url,width,public_metrics,alt_text,variants`;
+            const res = await fetch(url, {
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json'
-                }
+                    Authorization: `Bearer ${token}`,
+                },
             });
-            const {data} = res.data;
-            if (!data) continue;
-            console.log(data);
+            const rawData: TwitterResponse = await res.json();
+            const {includes} = rawData;
+            const data = rawData.data[0];
+            if (!data.attachments || !includes) {
+                continue;
+            }
+            for (const media of includes.media) {
+                if (fetchedKeys.includes(media.media_key)) continue;
+                fetchedKeys.push(media.media_key);
+                mediaEntities.push({url: media.url, media_key: media.media_key});
+            }
         }
+
+        // upload media to s3
+        const s3Promises = [];
+        for (const mediaEntity of mediaEntities) {
+            const res = await fetch(mediaEntity.url);
+            const filename = mediaEntity.url.split('/')[mediaEntity.url.split('/').length - 1];
+            if (res.body) {
+                s3Promises.push(uploadToS3(res.body, filename));
+            } else {
+                console.log('Error fetching media');
+            }
+        }
+        await Promise.all(s3Promises);
     }
 
-    async handleSQLCommand([message]: ArgsOf<"messageCreate">) {
+    async handleSQLCommand([ message ]: ArgsOf<'messageCreate'>) {
         if (!message.guild) return;
         const channel = message.guild.channels.resolve(message.channel.id);
         if (!channel || !channel.parent || channel.parent.name !== 'Databases') return;
         const server = await prisma.server.findUnique({
             where: {
-                channel: message.channel.id
-            }
+                channel: message.channel.id,
+            },
         });
         prisma.$disconnect();
         if (!server) return;

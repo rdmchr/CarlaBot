@@ -5,11 +5,10 @@ import cors from 'cors';
 import prisma from '@carla/database';
 import { generateJWT, getUserFromJWT } from './utils.js';
 import {VERSION} from './constants.js';
-import { getEnvValue } from '@carla/variable-provider';
 
-const clientId = getEnvValue("DISCORD_OAUTH_CLIENT_ID") as string;
-const clientSecret = getEnvValue("DISCORD_OAUTH_CLIENT_SECRET") as string;
-const webUrl = getEnvValue("WEB_URL") as string;
+const clientId = process.env.DISCORD_OAUTH_CLIENT_ID as string;
+const clientSecret = process.env.DISCORD_OAUTH_CLIENT_SECRET as string;
+const webUrl = process.env.WEB_URL as string;
 
 const corsOptions: cors.CorsOptions = {
     origin: [ webUrl ],
@@ -113,6 +112,6 @@ app.get('/auth', async (req, res) => {
     }).send({success: true, expiresAt: expiration.getTime()});
 });
 
-app.listen(4000, () => {
+app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}. Started server version ${VERSION}`);
 });

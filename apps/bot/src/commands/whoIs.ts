@@ -2,7 +2,6 @@ import { Discord, Slash, SlashOption } from 'discordx';
 import { CommandInteraction, MessageEmbed } from 'discord.js';
 import fetch from 'node-fetch-native';
 import { base64Encode } from '../utils/utils.js';
-import { getEnvValue } from '@carla/variable-provider';
 
 @Discord()
 export class whoIs {
@@ -14,8 +13,8 @@ export class whoIs {
             await interaction.reply('This command can only be used in a guild.');
             return;
         }
-        const jwaID = getEnvValue("JWA_ID");
-        const jwaSecret = getEnvValue("JWA_SECRET");
+        const jwaID = process.env.JWA_ID;
+        const jwaSecret = process.env.JWA_SECRET;
 
         if (!jwaID || !jwaSecret) {
             await interaction.reply('You need to set the JWA_ID and JWA_SECRET environment variables.');

@@ -2,15 +2,14 @@ import Express from 'express';
 import { Main } from './index.js';
 import { TextChannel } from 'discord.js';
 import { music } from './commands/music.js';
-import { getEnvValue } from '@carla/variable-provider';
 
 const app = Express();
-const PORT = getEnvValue("WEBHOOK_PORT") as string || 3333;
+const PORT = 3333;
 
 app.use(Express.json());
 
 app.use(async (req: Express.Request, res: Express.Response, next: Express.NextFunction) => {
-    const WEBHOOK_SECRET = getEnvValue("WEBHOOK_SECRET") as string;
+    const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET as string;
     if (WEBHOOK_SECRET && req.headers.secret !== WEBHOOK_SECRET) {
         console.log('Access denied, wrong secret.');
         res.sendStatus(403);
