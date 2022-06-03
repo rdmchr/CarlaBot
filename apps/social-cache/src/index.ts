@@ -1,14 +1,16 @@
 import Express from 'express';
-import bodyParser from 'body-parser';
 import cors from 'cors';
 import {VERSION} from './constants.js';
 import twitterRoute from './routes/twitter.js';
+import redditRoute from './routes/reddit.js';
 
 const app = Express();
 const PORT = 4444;
 
+
 app.use(cors());
 
+app.use(redditRoute);
 app.use(twitterRoute);
 
 app.use((req, res, next) => {
@@ -19,9 +21,8 @@ app.use((req, res, next) => {
 })
 
 app.get('/', async (req, res) => {
-    return res.sendStatus(200);
+    return res.send('Ok');
 });
-
 
 app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}. Started server version ${VERSION}`);
