@@ -70,8 +70,8 @@ model Tweet {
   id        String       @id
   text      String
   firstSeen DateTime     @default(now())
-  author    TweetAuthor  @relation(fields: [authorId], references: [id])
-  authorId  String       @unique
+  author    TweetAuthor  @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  authorId  String
   media     TweetMedia[]
 }
 
@@ -81,7 +81,9 @@ model TweetMedia {
   mediaKey    String   @unique
   firstSeen   DateTime @default(now())
   originalUrl String
-  tweet       Tweet    @relation(fields: [tweetId], references: [id])
+  tweet       Tweet    @relation(fields: [tweetId], references: [id], onDelete: Restrict)
   tweetId     String
-  awsKey      String
+  awsKey      String   @unique
+  width       Int
+  height      Int
 }

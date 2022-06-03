@@ -25,6 +25,13 @@ app.use(Express.json());
 app.use(bodyParser.text());
 app.use(cors(corsOptions));
 
+app.use((req, res, next) => {
+    console.log(`\n=================================`);
+    console.log(req.headers['user-agent']);
+    console.log(`=================================`);
+    next();
+})
+
 app.get('/', async (req, res) => {
     return res.sendStatus(200);
 });

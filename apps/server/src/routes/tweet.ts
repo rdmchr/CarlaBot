@@ -6,42 +6,52 @@ const serverUrl = process.env.SERVER_URL;
 
 type tweetResponse = {
     text: string,
+    url: string,
     author: {
         name: string,
         username: string
     },
-    media: string[],
+    media: {
+        url: string,
+        type: string
+    }[],
 }
 
-router.get('/tweet:id', async (req, res) => {
+router.get('/tweet/:id', async (req, res) => {
     const tweet = await prisma.tweet.findUnique({
         where: {
-            id: req.params.id
+            id: req.params.id,
         },
         include: {
             author: true,
-            media: true
-        }
+            media: true,
+        },
     });
     if (!tweet) {
-        return res.status(404).send({ error: 'Tweet not found' });
+        return res.status(404).send({error: 'Tweet not found'});
     }
 
     const response: tweetResponse = {
         text: tweet.text,
+        url: `https://twitter.com/${tweet.authorId}/status${tweet.id}`,
         author: {
             name: tweet.author.name,
             username: tweet.author.username,
         },
-        media: []
-    }
+        media: [],
+    };
 
     if (tweet.media) {
         const media = tweet.media.map((m) => {
-            return `${serverUrl}/tweetMedia/${m.id}`
-        })
+            return {
+                url: `${serverUrl}/tweetMedia/${m.awsKey}`,
+                type: m.type,
+            };
+        });
         response.media.push(...media);
     }
+
+    return res.status(200).send(response);
 });
 
 export default router;

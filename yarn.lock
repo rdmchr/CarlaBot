@@ -664,6 +664,20 @@
     "@aws-sdk/types" "3.78.0"
     tslib "^2.3.1"
 
+"@aws-sdk/s3-request-presigner@^3.100.0":
+  version "3.100.0"
+  resolved "https://registry.yarnpkg.com/@aws-sdk/s3-request-presigner/-/s3-request-presigner-3.100.0.tgz#d5eda3c5cadbce0749bdbebcee8bbadc560811a2"
+  integrity sha512-32j9o2ChP2pzsua5+Ci9XFKBsFXxlE5muVD9CSpEG9UfUieORAvXsZVChu86IWBFR2nQRm0vebrwJC2tKsgu1A==
+  dependencies:
+    "@aws-sdk/middleware-sdk-s3" "3.86.0"
+    "@aws-sdk/protocol-http" "3.78.0"
+    "@aws-sdk/signature-v4-multi-region" "3.88.0"
+    "@aws-sdk/smithy-client" "3.99.0"
+    "@aws-sdk/types" "3.78.0"
+    "@aws-sdk/util-create-request" "3.99.0"
+    "@aws-sdk/util-format-url" "3.78.0"
+    tslib "^2.3.1"
+
 "@aws-sdk/service-error-classification@3.78.0":
   version "3.78.0"
   resolved "https://registry.yarnpkg.com/@aws-sdk/service-error-classification/-/service-error-classification-3.78.0.tgz#8d3ac1064e39c180d9b764bb838c7f9de5615281"
@@ -773,6 +787,16 @@
   dependencies:
     tslib "^2.3.1"
 
+"@aws-sdk/util-create-request@3.99.0":
+  version "3.99.0"
+  resolved "https://registry.yarnpkg.com/@aws-sdk/util-create-request/-/util-create-request-3.99.0.tgz#4dc61a2bfd63b270897d85cc567f613f29294758"
+  integrity sha512-7+jM8xe2u5FW7ufRqHTmvJa7nH9f8uZXuWpHcmITKm8IRnkst1ib1DUctEZE+go9lnonzy4TttSNMt5NqFCgOA==
+  dependencies:
+    "@aws-sdk/middleware-stack" "3.78.0"
+    "@aws-sdk/smithy-client" "3.99.0"
+    "@aws-sdk/types" "3.78.0"
+    tslib "^2.3.1"
+
 "@aws-sdk/util-defaults-mode-browser@3.99.0":
   version "3.99.0"
   resolved "https://registry.yarnpkg.com/@aws-sdk/util-defaults-mode-browser/-/util-defaults-mode-browser-3.99.0.tgz#4d5b71279e89a25b9dd1d44ab7631fecbe48c447"
@@ -792,6 +816,15 @@
     "@aws-sdk/credential-provider-imds" "3.81.0"
     "@aws-sdk/node-config-provider" "3.80.0"
     "@aws-sdk/property-provider" "3.78.0"
+    "@aws-sdk/types" "3.78.0"
+    tslib "^2.3.1"
+
+"@aws-sdk/util-format-url@3.78.0":
+  version "3.78.0"
+  resolved "https://registry.yarnpkg.com/@aws-sdk/util-format-url/-/util-format-url-3.78.0.tgz#a363f5f72297dd49663f828335409992057c1e13"
+  integrity sha512-wdjt8ZAMyBrH/02QrQtB+S9cwtsBJ6bXRJ3XwL6z7L75nwTflKkzOQUS5Ie7HBf3j3JH0KhlqlEbf2nnM9jsPQ==
+  dependencies:
+    "@aws-sdk/querystring-builder" "3.78.0"
     "@aws-sdk/types" "3.78.0"
     tslib "^2.3.1"
 
@@ -1368,6 +1401,13 @@
   version "3.0.5"
   resolved "https://registry.yarnpkg.com/@types/minimatch/-/minimatch-3.0.5.tgz#1001cc5e6a3704b83c236027e77f2f58ea010f40"
   integrity sha512-Klz949h02Gz2uZCMGwDUSDS1YBlTdDDgbWHi+81l29tQALUtvz4rAYi5uoVhE5Lagoq6DeqAUlbrHvW/mXDgdQ==
+
+"@types/minio@^7.0.13":
+  version "7.0.13"
+  resolved "https://registry.yarnpkg.com/@types/minio/-/minio-7.0.13.tgz#53c97e1b8382a1cdb3a846bfab45ba9a81e1795c"
+  integrity sha512-Warrx6uN4KEpBCAWiTh7ngrPoaNIckawtBXqWbFzaatG/NPRZToAv/fa9yAPA7a2FHAGhe154KqaVIqacIn2pQ==
+  dependencies:
+    "@types/node" "*"
 
 "@types/node-fetch@^2.6.1":
   version "2.6.1"

@@ -1,53 +1,48 @@
 import prisma from '@carla/database';
 import Express from 'express';
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 const router = Express.Router();
 
-router.get('/tweetMedia:id', async (req, res) => {
-    const media = await prisma.tweetMedia.findUnique({
-        where: {
-            id: req.params.id
-        }
-    });
+router.get('/tweetMedia/:id', async (req, res) => {
+    const media = req.params.id;
 
     if (!media) {
-        return res.status(404).send({ error: 'Media not found' });
+        return res.status(404).send({error: 'Media not found'});
     }
 
-    const file = await getFromS3(media.awsKey);
+    const presignedUrl = await getPreSignedUrl(media);
+    if (!presignedUrl) {
+        return res.status(404).send({error: 'File not found'});
+    }
 
-    res.send(file);
+    res.redirect(307, presignedUrl);
 });
 
-
-
-export async function getFromS3(fileName: string) {
+/**
+ * generates a pre signed url to get a file from S3
+ * @param key the s3 key of the file
+ */
+async function getPreSignedUrl(key: string): Promise<string> {
     const accessKeyId = process.env.AWS_KEY_ID as string;
     const secretAccessKey = process.env.AWS_SECRET_KEY as string;
     const bucketName = process.env.AWS_BUCKET_NAME as string;
-
-    if (!accessKeyId || !secretAccessKey || !bucketName) return null;
 
     const client = new S3Client({
         region: 'eu-west-1',
         credentials: {
             accessKeyId: accessKeyId,
-            secretAccessKey: secretAccessKey
+            secretAccessKey: secretAccessKey,
         },
     });
 
     const getCommand = new GetObjectCommand({
         Bucket: bucketName,
-        Key: fileName,
+        Key: key,
     });
 
-    const res = await client.send(getCommand);
-
-    if (res.Body) {
-        return res.Body;
-    }
-    return null;
+    return await getSignedUrl(client, getCommand, {expiresIn: (120)});
 }
 
 
