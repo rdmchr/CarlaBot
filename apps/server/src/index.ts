@@ -6,8 +6,6 @@ import prisma from '@carla/database';
 import {VERSION} from './constants.js';
 import musicRoute from './routes/music.js';
 import authRoute from './routes/auth.js';
-import tweetRoute from './routes/tweet.js';
-import tweetMedia from './routes/tweetMedia.js';
 
 const webUrl = process.env.WEB_URL as string;
 
@@ -39,8 +37,6 @@ app.get('/', async (req, res) => {
 
 app.use(musicRoute);
 app.use(authRoute);
-app.use(tweetRoute);
-app.use(tweetMedia);
 
 app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}. Started server version ${VERSION}`);

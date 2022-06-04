@@ -1,8 +1,8 @@
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { Upload } from "@aws-sdk/lib-storage";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import fetch from "node-fetch-native";
-import { tweetData, TwitterResponse } from "../types/twitter.js";
+import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { Upload } from '@aws-sdk/lib-storage';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import fetch from 'node-fetch-native';
+import { tweetData, TwitterResponse } from '../types/twitter.js';
 
 const accessKeyId = process.env.AWS_KEY_ID as string;
 const secretAccessKey = process.env.AWS_SECRET_KEY as string;
@@ -27,10 +27,11 @@ export async function fetchTweetFromId(id: string, token: string) {
         throw new Error(`Failed to fetch tweet with id ${id}`);
     }
 
-    const rawData: TwitterResponse = await res.json();
+    const rawData = await res.json();
+    const rawTweet: TwitterResponse = rawData;
 
-    const { includes } = rawData;
-    const data = rawData.data[0];
+    const {includes} = rawTweet;
+    const data = rawTweet.data[0];
     if (!data.attachments || !includes) {
         return null; //tweet does not contain any media
     }
@@ -59,17 +60,30 @@ export async function fetchTweetFromId(id: string, token: string) {
                 width: media.width,
                 height: media.height,
             });
-            continue;
+        } else if (media.type === 'animated_gif') { // handle gifs
+            const highestRes = media.variants[0];
+            const fileExtension = highestRes.url.split('.').pop()!;
+
+            tweet.media.push({
+                media_key: media.media_key,
+                url: highestRes.url,
+                type: media.type,
+                awsKey: `${media.media_key}.${fileExtension}`,
+                width: media.width,
+                height: media.height,
+            });
+        } else if (media.type === 'photo') { // handle photos
+            tweet.media.push({
+                media_key: media.media_key,
+                url: media.url,
+                type: media.type,
+                awsKey: `${media.media_key}.${media.url.split('.')[media.url.split('.').length - 1]}`,
+                width: media.width,
+                height: media.height,
+            });
+        } else {
+            throw new Error(`Unknown media type ${JSON.stringify(rawData)}`);
         }
-        // handle photos
-        tweet.media.push({
-            media_key: media.media_key,
-            url: media.url,
-            type: media.type,
-            awsKey: `${media.media_key}.${media.url.split('.')[media.url.split('.').length - 1]}`,
-            width: media.width,
-            height: media.height,
-        });
     }
 
     return tweet;
@@ -79,7 +93,7 @@ export async function fetchTweetFromId(id: string, token: string) {
  * upload a file to aws s3
  * @param file the file to upload
  * @param key the aws s3 key of the file
- * @returns 
+ * @returns
  */
 export async function uploadToS3(file: any, key: string) {
     if (!accessKeyId || !secretAccessKey || !bucketName) return;
@@ -151,4 +165,25 @@ export async function getPreSignedUrl(key: string): Promise<string> {
     });
 
     return await getSignedUrl(client, getCommand, {expiresIn: expiry});
+}
+
+/**
+ * removes the short link added to tweets at the end of the tweet
+ * @param text the text of the tweet
+ */
+export function removeTrailingShortLink(text: string) {
+    const regex = new RegExp('https:\/\/t\.co/[A-Za-z0-9]*');
+    const parts = text.split(' ');
+    if (parts.length === 0) {
+        if (text.match(regex)) {
+            return text.replace(regex, '');
+        }
+        return text;
+    }
+    const lastPart = parts.pop()!;
+    if (lastPart.match(regex)) {
+        // remove last part of text
+        return parts.join(' ');
+    }
+    return text;
 }

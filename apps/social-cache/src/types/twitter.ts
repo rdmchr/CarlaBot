@@ -19,26 +19,41 @@ export type TwitterResponse = {
                 {
                     height: number,
                     width: number,
+                    preview_image_url: string,
+                    media_key: string,
+                    type: 'animated_gif',
+                    variants: [
+                        {
+                            bit_rate: number,
+                            url: string
+                            content_type: string
+                        }
+                    ]
+                } |
+                {
+                    height: number,
+                    width: number,
                     url: string,
                     media_key: string
                     type: 'photo'
-                } | {
-                height: number,
-                width: number,
-                media_key: string,
-                type: 'video'
-                variants: [
-                    {
-                        bit_rate?: number,
-                        content_type: string,
-                        url: string
-                    }
-                ],
-                public_metrics: {
-                    view_count: number
-                },
-                preview_image_url: string
-            }
+                } |
+                {
+                    height: number,
+                    width: number,
+                    media_key: string,
+                    type: 'video'
+                    variants: [
+                        {
+                            bit_rate?: number,
+                            content_type: string,
+                            url: string
+                        }
+                    ],
+                    public_metrics: {
+                        view_count: number
+                    },
+                    preview_image_url: string
+                }
         ],
         users: [
             {

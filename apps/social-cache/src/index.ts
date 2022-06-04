@@ -1,14 +1,10 @@
 import Express from 'express';
-import cors from 'cors';
 import {VERSION} from './constants.js';
 import twitterRoute from './routes/twitter.js';
 import redditRoute from './routes/reddit.js';
 
 const app = Express();
 const PORT = 4444;
-
-
-app.use(cors());
 
 app.use(redditRoute);
 app.use(twitterRoute);

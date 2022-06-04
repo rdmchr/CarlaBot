@@ -3,8 +3,8 @@
 #find /app -print | sed -e "s;[^/]*/;|____;g;s;____|; |;g"
 
 database_migration() {
-    echo "Migrating the database..."
-    npx prisma migrate deploy --schema=./packages/database/prisma/schema.prisma
+  echo "Migrating the database..."
+  npx prisma migrate deploy --schema=./packages/database/prisma/schema.prisma
 }
 
 start_bot() {
@@ -17,18 +17,26 @@ start_server() {
   node ./apps/server/dist/index.js
 }
 
+start_social() {
+  database_migration
+  node ./apps/social-cache/dist/index.js
+}
 
 case "$1" in
-    bot)
-        echo "Starting the bot..."
-        start_bot
-        ;;
-    server)
-        echo "Starting the server"
-        start_server
-        ;;
-    *)
-        echo "Invalid scope. Select one of the following: bot, server"
-        exit 1
-        ;;
+bot)
+  echo "Starting the bot..."
+  start_bot
+  ;;
+server)
+  echo "Starting the server"
+  start_server
+  ;;
+social-cache)
+  echo "Starting the social cache"
+  start_social
+  ;;
+*)
+  echo "Invalid scope. Select one of the following: bot, server"
+  exit 1
+  ;;
 esac

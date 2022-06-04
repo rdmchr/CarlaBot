@@ -1,8 +1,10 @@
 import Express from 'express';
 import prisma from '@carla/database';
-import { fetchTweetFromId, getPreSignedUrl, uploadToS3 } from '../utils/twitterUtils.js';
+import { fetchTweetFromId, getPreSignedUrl, removeTrailingShortLink, uploadToS3 } from '../utils/twitterUtils.js';
 import fetch from 'node-fetch-native';
 import videoTemplate from '../templates/video.js';
+import photoTemplate from '../templates/photo.js';
+import gifTemplate from '../templates/gif.js';
 
 const router = Express.Router();
 
@@ -10,20 +12,20 @@ router.get('/:user/status/:id', async (req, res) => {
     const token = process.env.TWITTER_TOKEN;
     if (!token) return res.send('No token');
 
-    const { user, id } = req.params;
+    const {user, id} = req.params;
     const dbTweet = await prisma.tweet.findUnique({
         where: {
             id: id,
         },
         include: {
             media: true,
-        }
+        },
     });
 
     if (dbTweet) {
         const videoUrl = await getPreSignedUrl(dbTweet.media[0].awsKey);
-
-        return res.send(videoTemplate(videoUrl));
+        const tweetUrl = `https://twitter.com/${dbTweet.authorId}/status/${id}`;
+        return res.send(videoTemplate(videoUrl, tweetUrl, removeTrailingShortLink(dbTweet.text)));
     }
 
     // fetch tweet from twitter
@@ -81,9 +83,20 @@ router.get('/:user/status/:id', async (req, res) => {
         },
     });
 
-    const videoUrl = await getPreSignedUrl(tweet.media[0].awsKey);
+    const mediaUrl = await getPreSignedUrl(tweet.media[0].awsKey);
+    const tweetUrl = `https://twitter.com/${tweet.author.id}/status/${tweet.id}`;
+    const text = removeTrailingShortLink(tweet.text);
 
-    return res.send(videoTemplate(videoUrl));
+    switch (tweet.media[0].type) {
+        case 'photo':
+            return res.send(photoTemplate(mediaUrl, tweetUrl, text));
+        case 'video':
+            return res.send(videoTemplate(mediaUrl, tweetUrl, text));
+        case 'animated_gif':
+            return res.send(gifTemplate(mediaUrl, tweetUrl, text));
+        default:
+            return res.send('No template found');
+    }
 });
 
 export default router;

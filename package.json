@@ -12,7 +12,8 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "prisma:push": "npx prisma db push --schema=packages/database/prisma/schema.prisma",
-    "prisma:generate": "npx prisma generate --schema=packages/database/prisma/schema.prisma"
+    "prisma:generate": "npx prisma generate --schema=packages/database/prisma/schema.prisma",
+    "prisma:migrate": "npx prisma migrate dev --schema=packages/database/prisma/schema.prisma"
   },
   "devDependencies": {
     "prettier": "latest",
