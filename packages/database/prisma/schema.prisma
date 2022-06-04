@@ -86,4 +86,5 @@ model TweetMedia {
   awsKey      String   @unique
   width       Int
   height      Int
+  photoNumber Int
 }

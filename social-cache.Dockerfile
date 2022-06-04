@@ -18,6 +18,6 @@ RUN yarn install --pure-lockfile
 RUN yarn global add turbo typescript
 RUN yarn run build
 
-EXPOSE 4000
+EXPOSE 4444
 
 CMD [ "./start.sh", "social-cache" ]

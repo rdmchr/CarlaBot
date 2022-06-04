@@ -9,11 +9,9 @@
 - **JWA_SECRET**: JsonWHOISAPI.com secret
 - **DATABASE_URL**: Postgres database URL
 - **GLOT_TOKEN**: Glot api token
-- **TWITTER_TOKEN**: Twitter api bearer token
-- **AWS_KEY_ID**: AWS access key id
-- **AWS_SECRET_KEY**: AWS secret access key
-- **AWS_BUCKET_NAME**: AWS S3 bucket name
 - **WEB_URL**: The URL of the website
+- **SOCIAL_CACHE_URL**: The URL of the social cache
+- **TWITTER_TOKEN**: Twitter api bearer token
 
 ## How to generate the webhook secret
 

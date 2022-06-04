@@ -1,5 +1,5 @@
 import Express from 'express';
-import {VERSION} from './constants.js';
+import { VERSION } from './constants.js';
 import twitterRoute from './routes/twitter.js';
 import redditRoute from './routes/reddit.js';
 
@@ -9,15 +9,8 @@ const PORT = 4444;
 app.use(redditRoute);
 app.use(twitterRoute);
 
-app.use((req, res, next) => {
-    console.log(`\n=================================`);
-    console.log(req.headers['user-agent']);
-    console.log(`=================================`);
-    next();
-})
-
 app.get('/', async (req, res) => {
-    return res.send('Ok');
+    return res.send(JSON.stringify({version: VERSION}));
 });
 
 app.listen(PORT, () => {

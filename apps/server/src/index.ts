@@ -1,8 +1,6 @@
 import Express from 'express';
 import bodyParser from 'body-parser';
-import fetch from 'node-fetch-native';
 import cors from 'cors';
-import prisma from '@carla/database';
 import {VERSION} from './constants.js';
 import musicRoute from './routes/music.js';
 import authRoute from './routes/auth.js';
@@ -22,13 +20,6 @@ app.use(Express.urlencoded({extended: true}));
 app.use(Express.json());
 app.use(bodyParser.text());
 app.use(cors(corsOptions));
-
-app.use((req, res, next) => {
-    console.log(`\n=================================`);
-    console.log(req.headers['user-agent']);
-    console.log(`=================================`);
-    next();
-})
 
 app.get('/', async (req, res) => {
     return res.sendStatus(200);
