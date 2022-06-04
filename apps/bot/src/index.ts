@@ -8,7 +8,6 @@ import * as Tracing from '@sentry/tracing';
 import * as Sentry from '@sentry/node';
 import { start } from './webhook.js';
 import { MyPlayer } from './audio/audio.js';
-import { getEnvValue } from '@carla/variable-provider';
 
 
 export class Main {
@@ -74,10 +73,10 @@ export class Main {
 
         await importx(dirname(import.meta.url) + '/{events,commands}/**/*.{js,ts}');
 
-        if (!getEnvValue("DISCORD_TOKEN")) {
+        if (!process.env.DISCORD_TOKEN) {
             throw Error('Could not find DISCORD_TOKEN in your environment');
         }
-        await this._client.login(getEnvValue("DISCORD_TOKEN") as string);
+        await this._client.login(process.env.DISCORD_TOKEN as string);
     }
 }
 

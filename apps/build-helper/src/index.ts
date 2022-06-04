@@ -16,6 +16,7 @@ async function getScope() {
             'Bot',
             'Web',
             'Server',
+            'Social-Cache'
         ],
     },
     ]);

@@ -11,7 +11,7 @@ export class onDelete {
 
         const embed = new MessageEmbed();
         embed.title = 'Message Updated';
-        embed.description = `Old: ${'```'}${message.cleanContent}${'```'}\nNew: ${'```'}${newMessage.cleanContent}${'```'}`;
+        embed.description = `Old: ${'```'}${message.cleanContent ? message.cleanContent : "N/A"}${'```'}\nNew: ${'```'}${newMessage.cleanContent ? newMessage.cleanContent : "N/A"}${'```'}`;
         embed.color = 0xFF0000;
         const author = message.author?.tag ? message.author.tag : 'Unknown';
         embed.footer = {
