@@ -11,7 +11,7 @@ export class onMessage {
         if (message.author.bot) return;
         if (message.cleanContent.startsWith('$'))
             await this.handleSQLCommand([ message ]);
-        await this.handleTwitter([ message ]);
+        this.handleTwitter([ message ]);
     }
 
     async handleTwitter([ message ]: ArgsOf<'messageCreate'>) {
@@ -31,11 +31,11 @@ export class onMessage {
 
         if (tweets.length === 0) return;
 
-        const fetchedTweets: { id: string, photoNum: number, text: string, type: 'text' | 'photo' | 'video', userId: string, photoId?: number }[] = [];
+        const fetchedTweets: { id: string, photoNum: number, text: string, type: 'text' | 'photo' | 'video', userId: string, photoId?: number, authorName: string, authorUsername: string, authorPic: string }[] = [];
         for (const tweet of tweets) {
             const tweetId = tweet.split('/')[5].replaceAll(/\D/g, ''); // remove non-numeric characters
             if (fetchedTweets.find(t => t.id === tweetId)) continue;
-            const tweetData = await fetch(`https://api.twitter.com/2/tweets?ids=${tweetId}&expansions=attachments.media_keys,author_id&tweet.fields=id`, {
+            const tweetData = await fetch(`https://api.twitter.com/2/tweets?ids=${tweetId}&expansions=attachments.media_keys,author_id&tweet.fields=id&user.fields=profile_image_url`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -43,7 +43,8 @@ export class onMessage {
             if (tweetData.status !== 200) continue;
             const tweetJSON = await tweetData.json().catch(() => null);
             if (!tweetJSON) continue;
-            if (tweetJSON.data[0].attachments?.media_keys?.length !== 0) {
+            console.log(tweetJSON.includes.users);
+            if (tweetJSON.data[0].attachments && tweetJSON.data[0].attachments.media_keys && tweetJSON.data[0].attachments.media_keys.length !== 0) {
                 const type = tweetJSON.includes.media[0].type === 'photo' ? 'photo' : 'video';
                 const photoPart = tweet.match('/photo/[1-4]/?');
                 if (type === 'photo' && photoPart) {
@@ -57,6 +58,9 @@ export class onMessage {
                             userId: tweetJSON.includes.users[0].id,
                             type,
                             photoId: Number(photoId),
+                            authorName: tweetJSON.includes.users[0].name,
+                            authorUsername: tweetJSON.includes.users[0].username,
+                            authorPic: tweetJSON.includes.users[0].profile_image_url,
                         });
                     }
                 } else {
@@ -67,6 +71,9 @@ export class onMessage {
                         text: removeTrailingShortLink(tweetJSON.data[0].text),
                         userId: tweetJSON.includes.users[0].id,
                         type,
+                        authorName: tweetJSON.includes.users[0].name,
+                        authorUsername: tweetJSON.includes.users[0].username,
+                        authorPic: tweetJSON.includes.users[0].profile_image_url,
                     });
                 }
             } else {
@@ -76,6 +83,9 @@ export class onMessage {
                     photoNum: 0,
                     text: removeTrailingShortLink(tweetJSON.data[0].text),
                     userId: tweetJSON.includes.users[0].id,
+                    authorName: tweetJSON.includes.users[0].name,
+                    authorUsername: tweetJSON.includes.users[0].username,
+                    authorPic: tweetJSON.includes.users[0].profile_image_url,
                 });
             }
         }
@@ -85,25 +95,51 @@ export class onMessage {
             const embeds: MessageEmbed[] = [];
             if (twt.photoNum === 0) { // tweet does not contain any media, only attach text
                 embeds.push(new MessageEmbed()
-                    .setTitle(`${twt.text}`)
+                    .setFooter({
+                        text: `Carla Twitter Embed`,
+                        iconURL: 'https://about.twitter.com/etc/designs/about2-twitter/public/img/favicon-32x32.png',
+                    })
+                    .setDescription(`${twt.text}`)
+                    .setAuthor({
+                        name: `${twt.authorName} (@${twt.authorUsername})`,
+                        iconURL: twt.authorPic,
+                        url: `https://twitter.com/${twt.authorUsername}`,
+                    })
                     .setURL(`${socialUrl}/${twt.userId}/status/${twt.id}`)
                     .setColor('#1da1f2'));
+                promises.push(message.reply({embeds}));
             } else {
                 if (twt.type === 'video') { // tweet contains a video
                     promises.push(message.reply(`${socialUrl}/${twt.userId}/status/${twt.id}`));
                 } else {
                     if (twt.photoId) { // only attach specified photo
                         embeds.push(new MessageEmbed()
-                            .setTitle(`Carla Twitter Embed`)
+                            .setFooter({
+                                text: `Carla Twitter Embed`,
+                                iconURL: 'https://about.twitter.com/etc/designs/about2-twitter/public/img/favicon-32x32.png',
+                            })
                             .setDescription(`${twt.text}`)
+                            .setAuthor({
+                                name: `${twt.authorName} (@${twt.authorUsername})`,
+                                iconURL: twt.authorPic,
+                                url: `https://twitter.com/${twt.authorUsername}`,
+                            })
                             .setURL(`${socialUrl}/${twt.userId}/status/${twt.id}`)
                             .setImage(`${socialUrl}/media/${twt.id}/${twt.photoId}`)
                             .setColor('#1da1f2'));
                     } else { // attach all photos
                         for (let i = 1; i <= twt.photoNum; i++) {
                             embeds.push(new MessageEmbed()
-                                .setTitle(`Carla Twitter Embed`)
+                                .setFooter({
+                                    text: `Carla Twitter Embed`,
+                                    iconURL: 'https://about.twitter.com/etc/designs/about2-twitter/public/img/favicon-32x32.png',
+                                })
                                 .setDescription(`${twt.text}`)
+                                .setAuthor({
+                                    name: `${twt.authorName} (@${twt.authorUsername})`,
+                                    iconURL: twt.authorPic,
+                                    url: `https://twitter.com/${twt.authorUsername}`,
+                                })
                                 .setURL(`${socialUrl}/${twt.userId}/status/${twt.id}`)
                                 .setImage(`${socialUrl}/media/${twt.id}/${i}`)
                                 .setColor('#1da1f2'));
@@ -114,6 +150,7 @@ export class onMessage {
             }
         });
         await message.suppressEmbeds(true);
+        setTimeout(() => message.suppressEmbeds(true), 1000); // sometimes embeds take a bit to load
         return Promise.all(promises);
     }
 
