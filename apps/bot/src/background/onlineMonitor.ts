@@ -9,11 +9,12 @@ function checkMemberStatus() {
                 id: guild.id,
             },
             select: {
-                offlineRole: true
+                offlineRole: true,
+                offlineMonitorEnabled: true,
             }
         });
 
-        if (!dbGuild || !dbGuild.offlineRole) return;
+        if (!dbGuild || !dbGuild.offlineRole || !dbGuild.offlineMonitorEnabled) return;
 
         const members = await guild.members.fetch({withPresences: true, limit: 150, force: true}); // update member cache
 

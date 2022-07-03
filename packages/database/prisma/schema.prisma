@@ -55,10 +55,11 @@ model WebUser {
 }
 
 model Guild {
-  id            String  @id
-  musicChannel  String?
-  onlineMessage String?
-  offlineRole   String?
+  id                    String  @id
+  musicChannel          String?
+  onlineMessage         String?
+  offlineRole           String?
+  offlineMonitorEnabled Boolean @default(false)
 }
 
 model TweetAuthor {

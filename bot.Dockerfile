@@ -2,6 +2,7 @@ FROM node:16-alpine
 
 WORKDIR /app
 
+RUN apk add g++ make py3-pip
 RUN apk add --no-cache --upgrade bash
 
 COPY out/full /app

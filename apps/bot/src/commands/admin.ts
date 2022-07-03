@@ -298,4 +298,78 @@ export class admin {
         await interaction.editReply('Done.');
     }
 
+    @Slash('toggleofflinemonitor', {description: 'Toggles the offline monitor.'})
+    async toggleOfflineMonitor(interaction: CommandInteraction) {
+        await interaction.deferReply({ephemeral: true});
+
+        if (!interaction.guild) {
+            await interaction.editReply('This command can only be used in a guild.');
+            return;
+        }
+
+        const hasPermission = await this.validatePermissions(interaction.member as GuildMember);
+
+        if (!hasPermission) {
+            await interaction.editReply('You don\'t have permission to use this command.');
+            return;
+        }
+
+        const dbGuild = await prisma.guild.findUnique({
+            where: {
+                id: interaction.guild.id,
+            },
+        });
+
+        if (!dbGuild) {
+            await interaction.editReply('This guild is not configured.');
+            return;
+        }
+
+        if (!dbGuild.offlineRole) {
+            await interaction.editReply('This guild does not have an offline role.');
+            return;
+        }
+
+        if (dbGuild.offlineMonitorEnabled) {
+            // disable offline monitor
+            await prisma.guild.update({
+                where: {
+                    id: interaction.guild.id,
+                },
+                data: {
+                    offlineMonitorEnabled: false,
+                },
+            });
+            // restore all roles
+            const members = await interaction.guild.members.fetch({limit: 150, force: true});
+            for (const i of members) {
+                const member = i[1];
+                if (member.roles.cache.has(dbGuild.offlineRole)) {
+                    await member.roles.remove(dbGuild.offlineRole);
+                }
+                const dbMember = await prisma.user.findUnique({
+                    where: {
+                        id: member.id,
+                    },
+                });
+                if (!dbMember) continue;
+                if (dbMember.roles) {
+                    await member.roles.add(dbMember.roles);
+                }
+            }
+            await interaction.editReply('Done. Offline monitor is now disabled.');
+        } else {
+            // enable offline monitor
+            await prisma.guild.update({
+                where: {
+                    id: interaction.guild.id,
+                },
+                data: {
+                    offlineMonitorEnabled: true,
+                },
+            });
+            await interaction.editReply('Done. Offline monitor is now enabled.');
+        }
+        prisma.$disconnect();
+    }
 }
