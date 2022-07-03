@@ -47,7 +47,7 @@ export class onNewMember {
         if (!presence || presence.status === 'offline') {
             // user is offline; remind them to come online
 
-            const message = await channel.send(`${user} You are still offline. Please come online to continue.`);
+            const message = await member.send(`${user} You are still offline. Please come online to continue.`);
             setTimeout(() => {
                 message.delete();
             }, 5000);
@@ -70,7 +70,7 @@ export class onNewMember {
 
         if (!dbData || !dbData.roles) {
             // user has no roles
-            const message = await channel.send(`${user} Could not find any roles for you.`);
+            const message = await member.send(`${user} Could not find any roles for you.`);
             setTimeout(() => {
                 message.delete();
             }, 5000);

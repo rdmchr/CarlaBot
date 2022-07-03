@@ -37,15 +37,23 @@ export class admin {
             return;
         }
 
-        await interaction.deferReply({ephemeral: true});
+        const dbGuild = await prisma.guild.findUnique({
+            where: {
+                id: interaction.guild.id,
+            },
+            select: {
+                offlineRole: true,
+            },
+        });
 
-        const members = await interaction.guild.members.fetch();
+        await interaction.deferReply({ephemeral: true});
+        const members = await interaction.guild.members.fetch({limit: 150, withPresences: true, force: true});
         for (const i of members) {
             const member = i[1];
             if (!member) {
                 continue;
             }
-            const roles = member.roles.valueOf().map(role => role.id);
+            let roles = member.roles.valueOf().map(role => role.id);
             try {
                 const user = await prisma.user.findUnique({
                     where: {
@@ -56,41 +64,78 @@ export class admin {
                     },
                 });
                 if (!user) {
-                    await prisma.user.create({
-                        data: {
-                            id: member.id,
-                            lastSeen: member.presence?.status !== 'offline' ? new Date() : null,
-                            verified: member.roles.cache.size > 1, // ignore @everyone role
-                            tag: member.user.tag,
-                            permissions: {
-                                create: {
-                                    isAdmin: member.id === '172726364900687872',
+                    if (dbGuild && dbGuild.offlineRole && member.roles.cache.has(dbGuild.offlineRole)) {
+                        // if the user has the offline role don't save their roles
+                        await prisma.user.create({
+                            data: {
+                                id: member.id,
+                                lastSeen: member.presence?.status !== 'offline' ? new Date() : null,
+                                verified: member.roles.cache.size > 2, // ignore @everyone role
+                                tag: member.user.tag,
+                                permissions: {
+                                    create: {
+                                        isAdmin: member.id === '172726364900687872',
+                                    },
                                 },
                             },
-                            roles: {
-                                set: roles,
+                        });
+                    } else {
+                        // if the user doesn't have the offline role save their roles
+                        await prisma.user.create({
+                            data: {
+                                id: member.id,
+                                lastSeen: member.presence?.status !== 'offline' ? new Date() : null,
+                                verified: member.roles.cache.size > 1, // ignore @everyone role
+                                tag: member.user.tag,
+                                permissions: {
+                                    create: {
+                                        isAdmin: member.id === '172726364900687872',
+                                    },
+                                },
+                                roles: {
+                                    set: roles,
+                                },
                             },
-                        },
-                    });
+                        });
+                    }
                 } else {
-                    await prisma.user.update({
-                        where: {
-                            id: member.id,
-                        },
-                        data: {
-                            lastSeen: member.presence?.status !== 'offline' ? new Date() : null,
-                            verified: member.roles.cache.size > 1, // ignore @everyone role
-                            tag: member.user.tag,
-                            permissions: {
-                                create: {
-                                    isAdmin: member.id === '172726364900687872',
+                    if (dbGuild && dbGuild.offlineRole && member.roles.cache.has(dbGuild.offlineRole)) {
+                        // if the user has the offline role don't save their roles
+                        await prisma.user.update({
+                            where: {
+                                id: member.id,
+                            },
+                            data: {
+                                lastSeen: member.presence?.status !== 'offline' ? new Date() : null,
+                                tag: member.user.tag,
+                                permissions: {
+                                    create: {
+                                        isAdmin: member.id === '172726364900687872',
+                                    },
                                 },
                             },
-                            roles: {
-                                set: roles,
+                        });
+                    } else {
+                        // if the user doesn't have the offline role save their roles
+                        await prisma.user.update({
+                            where: {
+                                id: member.id,
                             },
-                        },
-                    });
+                            data: {
+                                lastSeen: member.presence?.status !== 'offline' ? new Date() : null,
+                                verified: member.roles.cache.size > 1, // ignore @everyone role
+                                tag: member.user.tag,
+                                permissions: {
+                                    create: {
+                                        isAdmin: member.id === '172726364900687872',
+                                    },
+                                },
+                                roles: {
+                                    set: roles,
+                                },
+                            },
+                        });
+                    }
                 }
             } catch (_) {
                 await prisma.$disconnect();

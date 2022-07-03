@@ -15,7 +15,7 @@ function checkMemberStatus() {
 
         if (!dbGuild || !dbGuild.offlineRole) return;
 
-        const members = await guild.members.fetch(); // update member cache
+        const members = await guild.members.fetch({withPresences: true, limit: 150, force: true}); // update member cache
 
         for (const i of members) {
             const member = i[1];
