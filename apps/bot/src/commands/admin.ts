@@ -1,5 +1,5 @@
-import { CommandInteraction, GuildMember } from 'discord.js';
-import { Discord, Slash, SlashGroup } from 'discordx';
+import { CommandInteraction, GuildMember, Role } from 'discord.js';
+import { Discord, Slash, SlashGroup, SlashOption } from 'discordx';
 import prisma from '@carla/database';
 import { deleteObjects } from '../utils/s3Handler.js';
 
@@ -40,26 +40,63 @@ export class admin {
         await interaction.deferReply({ephemeral: true});
 
         const members = await interaction.guild.members.fetch();
-
-        members.forEach(async (member) => {
+        for (const i of members) {
+            const member = i[1];
+            if (!member) {
+                continue;
+            }
+            const roles = member.roles.valueOf().map(role => role.id);
             try {
-                await prisma.user.create({
-                    data: {
+                const user = await prisma.user.findUnique({
+                    where: {
                         id: member.id,
-                        lastSeen: member.presence?.status !== 'offline' ? new Date() : null,
-                        verified: member.roles.cache.size > 1, // ignore @everyone role
-                        tag: member.user.tag,
-                        permissions: {
-                            create: {
-                                isAdmin: member.id === '172726364900687872',
-                            },
-                        },
+                    },
+                    select: {
+                        id: true,
                     },
                 });
-                await prisma.$disconnect();
+                if (!user) {
+                    await prisma.user.create({
+                        data: {
+                            id: member.id,
+                            lastSeen: member.presence?.status !== 'offline' ? new Date() : null,
+                            verified: member.roles.cache.size > 1, // ignore @everyone role
+                            tag: member.user.tag,
+                            permissions: {
+                                create: {
+                                    isAdmin: member.id === '172726364900687872',
+                                },
+                            },
+                            roles: {
+                                set: roles,
+                            },
+                        },
+                    });
+                } else {
+                    await prisma.user.update({
+                        where: {
+                            id: member.id,
+                        },
+                        data: {
+                            lastSeen: member.presence?.status !== 'offline' ? new Date() : null,
+                            verified: member.roles.cache.size > 1, // ignore @everyone role
+                            tag: member.user.tag,
+                            permissions: {
+                                create: {
+                                    isAdmin: member.id === '172726364900687872',
+                                },
+                            },
+                            roles: {
+                                set: roles,
+                            },
+                        },
+                    });
+                }
             } catch (_) {
+                await prisma.$disconnect();
             }
-        });
+        }
+        await prisma.$disconnect();
 
         await interaction.editReply('Done.');
     }
@@ -114,6 +151,106 @@ export class admin {
         } else {
             await interaction.editReply('An error occurred. Check the console for more information. ' + (deletedEverything ? 'Deleted all tweets.' : 'Some tweets are still remaining..'));
         }
+    }
+
+    @Slash('setonlinemessage', {description: 'Sets the online message.'})
+    async setOnlineMessage(interaction: CommandInteraction) {
+        await interaction.deferReply({ephemeral: true});
+
+        if (!interaction.guild) {
+            await interaction.editReply('This command can only be used in a guild.');
+            return;
+        }
+
+        const hasPermission = await this.validatePermissions(interaction.member as GuildMember);
+
+        if (!hasPermission) {
+            await interaction.editReply('You don\'t have permission to use this command.');
+            return;
+        }
+
+        const channel = interaction.channel;
+        if (!channel) {
+            await interaction.editReply('This command can only be used in a channel.');
+            return;
+        }
+        const message = channel.lastMessage;
+        if (!message) {
+            await interaction.editReply('This command can only be used in a channel with a message.');
+            return;
+        }
+
+        await message.reactions.removeAll();
+        await message.react('✅');
+
+        const dbGuild = await prisma.guild.findUnique({
+            where: {
+                id: interaction.guild.id,
+            },
+        });
+
+        if (!dbGuild) {
+            await prisma.guild.create({
+                data: {
+                    id: interaction.guild.id,
+                    onlineMessage: message.id,
+                },
+            });
+        } else {
+            await prisma.guild.update({
+                where: {
+                    id: interaction.guild.id,
+                },
+                data: {
+                    onlineMessage: message.id,
+                },
+            });
+        }
+
+        await interaction.editReply('Done.');
+    }
+
+    @Slash('setofflinerole', {description: 'Sets the role that is given to users who are offline.'})
+    async setOfflineRole(@SlashOption('role', {type: 'ROLE'}) role: Role, interaction: CommandInteraction) {
+        await interaction.deferReply({ephemeral: true});
+
+        if (!interaction.guild) {
+            await interaction.editReply('This command can only be used in a guild.');
+            return;
+        }
+
+        const hasPermission = await this.validatePermissions(interaction.member as GuildMember);
+
+        if (!hasPermission) {
+            await interaction.editReply('You don\'t have permission to use this command.');
+            return;
+        }
+
+        const dbGuild = await prisma.guild.findUnique({
+            where: {
+                id: interaction.guild.id,
+            },
+        });
+
+        if (!dbGuild) {
+            await prisma.guild.create({
+                data: {
+                    id: interaction.guild.id,
+                    offlineRole: role.id,
+                },
+            });
+        } else {
+            await prisma.guild.update({
+                where: {
+                    id: interaction.guild.id,
+                },
+                data: {
+                    offlineRole: role.id,
+                },
+            });
+        }
+
+        await interaction.editReply('Done.');
     }
 
 }

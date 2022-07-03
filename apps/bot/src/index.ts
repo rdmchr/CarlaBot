@@ -8,6 +8,7 @@ import * as Tracing from '@sentry/tracing';
 import * as Sentry from '@sentry/node';
 import { start } from './webhook.js';
 import { MyPlayer } from './audio/audio.js';
+import { initialiseOnlineMonitor } from './background/onlineMonitor.js';
 
 
 export class Main {
@@ -33,6 +34,12 @@ export class Main {
                 Intents.FLAGS.GUILD_MESSAGE_TYPING,
                 Intents.FLAGS.GUILD_MEMBERS,
                 Intents.FLAGS.GUILD_VOICE_STATES,
+                Intents.FLAGS.GUILD_PRESENCES,
+            ],
+            partials: [
+                'USER',
+                'REACTION',
+                'MESSAGE',
             ],
             silent: false,
             presence: {
@@ -59,6 +66,9 @@ export class Main {
                 guild: {log: true},
             });
             await this._client.initApplicationPermissions(true);
+
+            // initialise online monitor
+            initialiseOnlineMonitor();
 
             console.log('Ready!');
         });

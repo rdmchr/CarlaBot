@@ -19,6 +19,7 @@ model User {
   lastSeen      DateTime?
   verified      Boolean
   tag           String?
+  roles         String[]
 }
 
 model Server {
@@ -54,8 +55,10 @@ model WebUser {
 }
 
 model Guild {
-  id           String @id
-  musicChannel String
+  id            String  @id
+  musicChannel  String?
+  onlineMessage String?
+  offlineRole   String?
 }
 
 model TweetAuthor {
@@ -87,4 +90,24 @@ model TweetMedia {
   width       Int
   height      Int
   photoNumber Int
+}
+
+model RedditPost {
+  id        String        @id
+  title     String
+  isOver18  Boolean
+  url       String
+  firstSeen DateTime      @default(now())
+  type      String
+  text      String?
+  author    String
+  media     RedditMedia[]
+}
+
+model RedditMedia {
+  id           String     @id @default(cuid())
+  type         String
+  awsKey       String
+  redditPost   RedditPost @relation(fields: [redditPostId], references: [id])
+  redditPostId String
 }

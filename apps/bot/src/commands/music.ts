@@ -20,6 +20,9 @@ export class music {
         if (!dbGuild) {
             return null;
         }
+        if (!dbGuild.musicChannel) {
+            return null;
+        }
         const channel = guild.channels.cache.get(dbGuild.musicChannel);
         return channel instanceof TextChannel ? channel : null;
     }
