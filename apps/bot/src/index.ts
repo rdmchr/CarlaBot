@@ -92,13 +92,15 @@ export class Main {
 
 // initialize Sentry
 Sentry.init({
-    dsn: 'https://9ab08f77140a43f88c450313ff315cfb@o1247746.ingest.sentry.io/6407743',
+    dsn: process.env.SENTRY_DSN,
 
     // Set tracesSampleRate to 1.0 to capture 100%
     // of transactions for performance monitoring.
     // We recommend adjusting this value in production
-    tracesSampleRate: 0.2,
+    tracesSampleRate: 0.5,
+    release: VERSION,
 });
 
 Main.start();
-start();
+
+//start(); // currently not used

@@ -12,6 +12,7 @@
 - **WEB_URL**: The URL of the website
 - **SOCIAL_CACHE_URL**: The URL of the social cache
 - **TWITTER_TOKEN**: Twitter api bearer token
+- **SENTRY_DSN**: Your sentry DSN, leave empty to disable error logging
 
 ## How to generate the webhook secret
 

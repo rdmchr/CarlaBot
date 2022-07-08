@@ -1015,7 +1015,7 @@
     tsyringe "^4.6.0"
     typedi "^0.10.0"
 
-"@discordx/importer@^1.1.2":
+"@discordx/importer@^1.1.10":
   version "1.1.10"
   resolved "https://registry.yarnpkg.com/@discordx/importer/-/importer-1.1.10.tgz#82370c36ad09796e35bd080b36f053bfe0e7c744"
   integrity sha512-cR8qwQZV7S6CoV+Fw+pcyWAfChyUQZySLe+ByTDLE4gdz4jVL7qqdlWt7G1KrZWSToapJuq2k4M7g3jdVJo6nQ==
@@ -1030,7 +1030,7 @@
   dependencies:
     tslib "^2.3.1"
 
-"@discordx/music@^4.0.0":
+"@discordx/music@^4.0.2":
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/@discordx/music/-/music-4.0.2.tgz#34a8310db4aefff42ba9c9bb09a39c088c3b774b"
   integrity sha512-uQvRgn2gRVPBldsax0lTiih/aS0CCPQAY+nNOI5FX+lgG0R+LUFNhWQSGRd7d07GYrj6pVMWHFL3cnKI4X3jRQ==

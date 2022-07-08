@@ -11,7 +11,7 @@ function checkMemberStatus() {
             select: {
                 offlineRole: true,
                 offlineMonitorEnabled: true,
-            }
+            },
         });
 
         if (!dbGuild || !dbGuild.offlineRole || !dbGuild.offlineMonitorEnabled) return;
@@ -55,7 +55,14 @@ function checkMemberStatus() {
                     continue;
                 }
                 prisma.$disconnect();
-                await member.roles.set([ dbGuild.offlineRole ]);
+                try {
+                    await member.roles.set([ dbGuild.offlineRole ]);
+                } catch (_) {
+                    // if an error occurs, continue to next member
+                    // error probably means that we cant edit roles of server owner
+                    prisma.$disconnect();
+                    continue;
+                }
                 // kick user from voice channel
                 if (member.voice.channel) {
                     await member.voice.disconnect();
@@ -72,7 +79,14 @@ function checkMemberStatus() {
                     continue;
                 }
                 // user has offline role and roles: remove offline role and restore all roles
-                await member.roles.remove([ dbGuild.offlineRole ]);
+                try {
+                    await member.roles.remove([ dbGuild.offlineRole ]);
+                } catch (_) {
+                    // if an error occurs, continue to next member
+                    // error probably means that we cant edit roles of server owner
+                    prisma.$disconnect();
+                    continue;
+                }
                 prisma.$connect();
                 const dbData = await prisma.user.findUnique({
                     where: {
@@ -84,7 +98,13 @@ function checkMemberStatus() {
                 });
                 prisma.$disconnect();
                 if (!dbData || !dbData.roles) continue;
-                await member.roles.set(dbData.roles);
+                try {
+                    await member.roles.set(dbData.roles);
+                } catch (_) {
+                    // if an error occurs, continue to next member
+                    // error probably means that we cant edit roles of server owner
+                    prisma.$disconnect();
+                }
             }
         }
     });
