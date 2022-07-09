@@ -148,8 +148,8 @@ export class music {
         if (!queue) {
             return;
         }
-        queue.pause() ? queue.resume() : queue.pause();
         await interaction.deferReply();
+        queue.pause() ? queue.resume() : queue.pause();
         interaction.deleteReply();
     }
 
@@ -170,8 +170,8 @@ export class music {
         if (!queue) {
             return;
         }
-        queue.setRepeat(!queue.repeat);
         await interaction.deferReply();
+        queue.setRepeat(!queue.repeat);
         interaction.deleteReply();
     }
 
@@ -363,7 +363,8 @@ export class music {
     async volume(@SlashOption('volume', {
         description: 'The volume to set.',
         type: 'INTEGER',
-    }) volume: number, interaction: CommandInteraction): Promise<void> {
+        required: false,
+    }) volume: number | undefined, interaction: CommandInteraction): Promise<void> {
         const validate = this.validateInteraction(interaction);
         if (!validate) {
             return;
@@ -376,6 +377,12 @@ export class music {
             return;
         }
 
+        if (!volume) {
+            await interaction.reply(`Volume is currently at **${queue.volume}**.`);
+            return;
+        }
+
+        music.player.overrideVolume(validate.guild.id, volume);
         const state = queue.setVolume(volume);
         if (!state) {
             await interaction.reply('Could not set volume.');

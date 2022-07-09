@@ -298,10 +298,22 @@ export class MyQueue extends Queue {
 }
 
 export class MyPlayer extends Player {
+  public static vol: {guild: string, volume: number}[] = [];
+
+  private getVolumeForGuild(guild: string) {
+    const vol = MyPlayer.vol.find((v) => v.guild === guild);
+    return vol?.volume ?? 3;
+  }
+
+  public overrideVolume(guild: string, volume: number) {
+    MyPlayer.vol.push({ guild, volume });
+  }
+
   constructor() {
     super();
 
     this.on<MyQueue, "onStart">("onStart", ([queue]) => {
+      queue.setVolume(this.getVolumeForGuild(queue.guild.id));
       queue.updateControlMessage({ force: true });
     });
 
